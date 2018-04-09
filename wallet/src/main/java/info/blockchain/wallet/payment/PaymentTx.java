@@ -47,11 +47,44 @@ public class PaymentTx {
     private static final Logger log = LoggerFactory.getLogger(PaymentTx.class);
 
     public static synchronized Transaction makeSimpleTransaction(
+            NetworkParameters networkParameters,
+            List<UnspentOutput> unspentCoins,
+            HashMap<String, BigInteger> receivingAddresses,
+            BigInteger fee,
+            @Nullable String changeAddress)
+            throws InsufficientMoneyException, AddressFormatException {
+
+        return makeTransaction(networkParameters,
+                unspentCoins,
+                receivingAddresses,
+                fee,
+                changeAddress,
+                false);
+    }
+
+    public static synchronized Transaction makeRbfTransaction(
+            NetworkParameters networkParameters,
+            List<UnspentOutput> unspentCoins,
+            HashMap<String, BigInteger> receivingAddresses,
+            BigInteger fee,
+            @Nullable String changeAddress)
+            throws InsufficientMoneyException, AddressFormatException {
+
+        return makeTransaction(networkParameters,
+                unspentCoins,
+                receivingAddresses,
+                fee,
+                changeAddress,
+                true);
+    }
+
+    private static synchronized Transaction makeTransaction(
         NetworkParameters networkParameters,
         List<UnspentOutput> unspentCoins,
         HashMap<String, BigInteger> receivingAddresses,
         BigInteger fee,
-        @Nullable String changeAddress)
+        @Nullable String changeAddress,
+        boolean allowRbf)
         throws InsufficientMoneyException, AddressFormatException {
 
         log.info("Making transaction");
@@ -66,6 +99,12 @@ public class PaymentTx {
         //Inputs
         BigInteger inputValueSum = addTransactionInputList(networkParameters, transaction,
             unspentCoins, valueNeeded);
+
+        if (allowRbf) {
+            for (TransactionInput input : transaction.getInputs()) {
+                input.setSequenceNumber(0);
+            }
+        }
 
         //Add Change
         if (changeAddress != null) {
@@ -274,4 +313,48 @@ public class PaymentTx {
         return pushTx.pushTx("bch", new String(Hex.encode(transaction.bitcoinSerialize())));
     }
 
+    public static synchronized Transaction bumpFee(
+            NetworkParameters networkParameters,
+            Transaction tx,
+            List<UnspentOutput> unspentCoins,
+            BigInteger additionalFee,
+            @Nullable String changeAddress) throws InsufficientMoneyException {
+
+        log.info("Bumping transaction fee");
+
+        if (!tx.isOptInFullRBF()) {
+            throw new IllegalStateException("Replace by fee not allowed on this transaction.");
+        }
+
+        Transaction transaction = tx;
+
+        //Outputs - sum existing outputs
+        BigInteger outputValueSum = BigInteger.ZERO;
+        for (TransactionOutput output : tx.getOutputs()) {
+            Coin coin = output.getValue();
+            System.out.println(coin.value+" in "+output.getAddressFromP2PKHScript(networkParameters));
+            outputValueSum = outputValueSum.add(BigInteger.valueOf(coin.getValue()));
+        }
+
+        //Additional fee needed
+        BigInteger valueNeeded = additionalFee;
+
+        //Inputs
+        //Bump sequence number
+        for (TransactionInput input : transaction.getInputs()) {
+            input.setSequenceNumber(input.getSequenceNumber() + 1);
+        }
+
+        BigInteger inputValueSum = addTransactionInputList(networkParameters, transaction,
+                unspentCoins, valueNeeded);
+
+        //Add another Change output for bumped fee
+        if (changeAddress != null) {
+            addChange(networkParameters, transaction, additionalFee, changeAddress, outputValueSum,
+                    inputValueSum);
+        }
+
+        //Bip69
+        return Tools.applyBip69(transaction);
+    }
 }

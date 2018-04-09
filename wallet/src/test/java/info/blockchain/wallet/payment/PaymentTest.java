@@ -509,4 +509,72 @@ public class PaymentTest extends MockedResponseTest {
         Assert.assertEquals("e93cf0fb44ff3c3d9f2cde59d0a69a3b3daac0f7991f92bc8389f33c9a55f762",
                 tx.getHashAsString());
     }
+
+    @Test
+    public void makeRBFTransaction() throws Exception {
+
+        /*
+        8 available Payment. [80200,70000,60000,50000,40000,30000,20000,10000]
+         */
+        UnspentOutputs unspentOutputs = UnspentOutputs.fromJson(UnspentTestData.apiResponseString);
+        Payment payment = new Payment();
+
+        BigInteger spendAmount = BigInteger.valueOf(50000L);
+        BigInteger aboluteFee = BigInteger.valueOf(27);
+
+        SpendableUnspentOutputs paymentBundle = subject.getSpendableCoins(unspentOutputs,
+                spendAmount.add(aboluteFee),
+                BigInteger.ZERO);
+
+        System.out.println("spendAmount = "+spendAmount);
+        System.out.println("aboluteFee: "+aboluteFee);
+
+        String toAddress = "1GYkgRtJmEp355xUtVFfHSFjFdbqjiwKmb";
+        String changeAddress = "1GiEQZt9aX2XfDcj14tCC4xAWEJtq9EXW7";
+
+        final HashMap<String, BigInteger> receivers = new HashMap<>();
+        receivers.put(toAddress, spendAmount);
+
+        Transaction tx = payment.makeRBFTransaction(bitcoinMainNetParams,
+                paymentBundle.getSpendableOutputs(),
+                receivers,
+                aboluteFee,
+                changeAddress);
+
+        System.out.println(Hex.toHexString(tx.bitcoinSerialize()));
+        assertEquals(0, tx.getInput(0).getSequenceNumber());
+
+        BigInteger additionalFee = BigInteger.valueOf(30);
+        System.out.println("new fee: "+aboluteFee.add(additionalFee));
+        paymentBundle = subject.getSpendableCoins(unspentOutputs,
+                additionalFee,
+                BigInteger.ZERO);
+
+        tx = payment.bumpFee(bitcoinMainNetParams,
+                tx,
+                paymentBundle.getSpendableOutputs(),
+                additionalFee,
+                changeAddress);
+
+        System.out.println(Hex.toHexString(tx.bitcoinSerialize()));
+        assertEquals(1, tx.getInput(0).getSequenceNumber());
+
+
+        additionalFee = BigInteger.valueOf(20);
+        System.out.println("new fee: "+aboluteFee.add(additionalFee));
+        paymentBundle = subject.getSpendableCoins(unspentOutputs,
+                additionalFee,
+                BigInteger.ZERO);
+
+        tx = payment.bumpFee(bitcoinMainNetParams,
+                tx,
+                paymentBundle.getSpendableOutputs(),
+                additionalFee,
+                changeAddress);
+
+        System.out.println(Hex.toHexString(tx.bitcoinSerialize()));
+        assertEquals(2, tx.getInput(0).getSequenceNumber());
+
+//        assertEquals("5ee5cb75b364c13fc3c6457be1fd90f58f0b7b2e4f37fcfbd652b90669686420", tx.getHash().toString());
+    }
 }

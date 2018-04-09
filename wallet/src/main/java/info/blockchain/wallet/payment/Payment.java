@@ -127,4 +127,27 @@ public class Payment {
         return PaymentTx.publishSimpleBchTransaction(transaction, BlockchainFramework.getApiCode());
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // RBF
+    ///////////////////////////////////////////////////////////////////////////
+    public Transaction makeRBFTransaction(NetworkParameters networkParameters,
+                                          List<UnspentOutput> unspentCoins,
+                                          HashMap<String, BigInteger> receivingAddresses,
+                                          BigInteger fee,
+                                          @Nullable String changeAddress)
+            throws InsufficientMoneyException, AddressFormatException {
+        return PaymentTx.makeRbfTransaction(networkParameters,
+                unspentCoins,
+                receivingAddresses,
+                fee,
+                changeAddress);
+    }
+
+    public Transaction bumpFee(NetworkParameters networkParameters,
+                               Transaction originalTransaction,
+                               List<UnspentOutput> unspentCoins,
+                               BigInteger additionalFee,
+                               @Nullable String changeAddress) throws InsufficientMoneyException {
+        return PaymentTx.bumpFee(networkParameters, originalTransaction, unspentCoins, additionalFee, changeAddress);
+    }
 }
