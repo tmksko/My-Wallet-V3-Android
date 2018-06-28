@@ -331,7 +331,7 @@ platform :android do
 
       upload_to_play_store(
           track: 'alpha',
-          apk: "{#apkPath}",
+          apk: "#{apkPath}",
           validate_only: 'true',
       )
 
