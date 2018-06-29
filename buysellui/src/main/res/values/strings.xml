@@ -174,7 +174,7 @@
 
     <!-- Coinify Verification -->
     <string name="buy_sell_get_to_know_you_title">Let\’s Get to Know You</string>
-    <string name="buy_sell_get_to_know_you_message">We need to learn a bit about you before we can open your exchange account.</string>
+    <string name="buy_sell_get_to_know_you_message">We need to learn a bit about you before we can open your buy and sell account.</string>
     <string name="buy_sell_cannot_open_file">Cannot open file chooser</string>
     <string name="buy_sell_choose_file">Choose file</string>
 
