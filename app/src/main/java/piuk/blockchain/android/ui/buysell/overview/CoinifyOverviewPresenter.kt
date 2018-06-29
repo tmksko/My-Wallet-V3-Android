@@ -287,9 +287,9 @@ class CoinifyOverviewPresenter @Inject constructor(
                 onSuccess = {
                     if (!it.isEmpty()) {
                         it.map {
-                            val subscription = it.first ?: return@subscribeBy
-
+                            val subscription = it.first
                             val trade = it.second
+
                             val calendar = Calendar.getInstance()
                                     .apply { time = trade.createTime.fromIso8601()!! }
                             val dayOfWeek = calendar.getDisplayName(

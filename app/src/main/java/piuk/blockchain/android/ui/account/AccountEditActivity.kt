@@ -72,7 +72,7 @@ class AccountEditActivity : BaseMvpActivity<AccountEditView, AccountEditPresente
         presenter.accountModel = AccountEditModel(this)
         binding.viewModel = accountEditPresenter
 
-        setupToolbar(binding.toolbarContainer!!.toolbarGeneral, R.string.edit)
+        setupToolbar(binding.toolbarContainer.toolbarGeneral, R.string.edit)
 
         binding.tvTransfer.setOnClickListener {
             if (presenter.transferFundsClickable()) {
