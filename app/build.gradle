@@ -64,7 +64,7 @@ android {
         /**
          * API LEVELS
          */
-        minApi16 {
+        minApi17 {
             dimension "minSdk"
             minSdkVersion Versions.minSdk
         }
