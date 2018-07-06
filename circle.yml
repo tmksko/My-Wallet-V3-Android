@@ -3,7 +3,7 @@ jobs:
   build:
     resource_class: large
     docker:
-      - image: circleci/api-27-alpha
+      - image: circleci/android:api-27-alpha
     environment:
       _JAVA_OPTIONS: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
     steps:
