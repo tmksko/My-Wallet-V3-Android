@@ -16,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.ResponseBody
 import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.NetworkParameters
 import org.spongycastle.crypto.InvalidCipherTextException
 import piuk.blockchain.androidcore.data.rxjava.RxBus
 import piuk.blockchain.androidcore.data.rxjava.RxPinning
@@ -674,7 +675,7 @@ class PayloadDataManager @Inject constructor(
         payloadManager.validateSecondPassword(secondPassword)
 
     @Throws(Exception::class)
-    fun decryptHDWallet(secondPassword: String?) {
-        payloadManager.payload!!.decryptHDWallet(0, secondPassword)
+    fun decryptHDWallet(networkParameters: NetworkParameters, secondPassword: String?) {
+        payloadManager.payload!!.decryptHDWallet(networkParameters, 0, secondPassword)
     }
 }
