@@ -38,7 +38,11 @@ class PayloadService @Inject constructor(private val payloadManager: PayloadMana
      * @return A [Completable] object
      */
     @WebRequest
-    internal fun initializeFromPayload(networkParameters: NetworkParameters, payload: String, password: String): Completable =
+    internal fun initializeFromPayload(
+        networkParameters: NetworkParameters,
+        payload: String,
+        password: String
+    ): Completable =
         Completable.fromCallable {
             payloadManager.initializeAndDecryptFromPayload(networkParameters, payload, password)
         }
@@ -112,7 +116,10 @@ class PayloadService @Inject constructor(private val payloadManager: PayloadMana
      * @return A [Completable] object
      */
     @WebRequest
-    internal fun handleQrCode(networkParameters: NetworkParameters, data: String): Completable = Completable.fromCallable {
+    internal fun handleQrCode(
+        networkParameters: NetworkParameters,
+        data: String
+    ): Completable = Completable.fromCallable {
         payloadManager.initializeAndDecryptFromQR(networkParameters, data)
     }
 
