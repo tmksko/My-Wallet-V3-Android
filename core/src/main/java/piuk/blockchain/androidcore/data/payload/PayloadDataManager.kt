@@ -18,6 +18,7 @@ import okhttp3.ResponseBody
 import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.NetworkParameters
 import org.spongycastle.crypto.InvalidCipherTextException
+import piuk.blockchain.androidcore.data.api.EnvironmentConfig
 import piuk.blockchain.androidcore.data.rxjava.RxBus
 import piuk.blockchain.androidcore.data.rxjava.RxPinning
 import piuk.blockchain.androidcore.injection.PresenterScope
@@ -36,10 +37,12 @@ class PayloadDataManager @Inject constructor(
     private val payloadService: PayloadService,
     private val privateKeyFactory: PrivateKeyFactory,
     private val payloadManager: PayloadManager,
+    environmentConfig: EnvironmentConfig,
     rxBus: RxBus
 ) {
 
     private val rxPinning: RxPinning = RxPinning(rxBus)
+    private val networkParameters = environmentConfig.bitcoinNetworkParameters
 
     // /////////////////////////////////////////////////////////////////////////
     // CONVENIENCE METHODS AND PROPERTIES
@@ -117,8 +120,9 @@ class PayloadDataManager @Inject constructor(
      * @return A [Completable] object
      */
     fun initializeFromPayload(payload: String, password: String): Completable =
-        rxPinning.call { payloadService.initializeFromPayload(payload, password) }
-            .applySchedulers()
+        rxPinning.call {
+            payloadService.initializeFromPayload(networkParameters, payload, password)
+        }.applySchedulers()
 
     /**
      * Restores a HD wallet from a 12 word mnemonic and initializes the [PayloadDataManager].
@@ -166,8 +170,9 @@ class PayloadDataManager @Inject constructor(
      * @return A [Completable] object
      */
     fun initializeAndDecrypt(sharedKey: String, guid: String, password: String): Completable =
-        rxPinning.call { payloadService.initializeAndDecrypt(sharedKey, guid, password) }
-            .applySchedulers()
+        rxPinning.call {
+            payloadService.initializeAndDecrypt(networkParameters, sharedKey, guid, password)
+        }.applySchedulers()
 
     /**
      * Initializes and decrypts a user's payload given valid QR code scan data.
@@ -176,7 +181,7 @@ class PayloadDataManager @Inject constructor(
      * @return A [Completable] object
      */
     fun handleQrCode(data: String): Completable =
-        rxPinning.call { payloadService.handleQrCode(data) }
+        rxPinning.call { payloadService.handleQrCode(networkParameters, data) }
             .applySchedulers()
 
     /**
@@ -398,7 +403,7 @@ class PayloadDataManager @Inject constructor(
      */
     fun createNewAccount(accountLabel: String, secondPassword: String?): Observable<Account> =
         rxPinning.call<Account> {
-            payloadService.createNewAccount(accountLabel, secondPassword)
+            payloadService.createNewAccount(networkParameters, accountLabel, secondPassword)
         }.applySchedulers()
 
     /**
